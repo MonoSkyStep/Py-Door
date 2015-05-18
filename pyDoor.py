@@ -5,7 +5,7 @@ import os
 
 
 directory = os.path.abspath(os.path.dirname(sys.argv[0]))
-plugins =            ModuleLoader.getModules()
+modules =            ModuleLoader.getModules()
 running =                                False
 host, port =                 'localhost', 8080
 connection = Connection.Connection(host, port)
@@ -27,14 +27,16 @@ def run():
 
 
 
-def parse(cmd):
-    cmd, *args = cmd.split(' ')
+def parse(text):
+    cmd, *args = text.split(' ')
     # print('cmd:' + cmd)
     # print('args:' + str(args))
 
-    for plugin in plugins:
-        if cmd.lower() == plugin['name'].lower():
-            ModuleLoader.loadModule(plugin)
+    for mod in modules:
+        if cmd.lower() == mod['name'].lower():
+            module = ModuleLoader.loadModule(mod)
+            module.run(connection)
+            return
 
     for case in switch(cmd):
 
@@ -96,9 +98,17 @@ def parse(cmd):
             break
 
         if case('del'):
+            os.system(text)
+            connection.writeln('letting system handle that one')
 
             if len(args) < 1:
-                connection.writeln('Usage: del [r] <file>')
+                connection.writeln('Usage: del [-r] <file>')
+
+                file = False
+                break
+            for pos, arg in enumerate(args):
+                if arg == '-r':
+                    pass
 
             break
 
